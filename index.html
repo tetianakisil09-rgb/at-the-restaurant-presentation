@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>At the Restaurant — A2 English Lesson</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Playfair Display for Menu elegance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        sage: {
+                            50: '#f4f7f5',
+                            100: '#e3ebe6',
+                            200: '#c7d7cd',
+                            300: '#a1bcac',
+                            400: '#789c87',
+                            500: '#587f69',
+                            600: '#446552',
+                            700: '#375143',
+                            800: '#2e4237',
+                            900: '#27372e',
+                        },
+                        cream: '#fafaf8',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom utility styles for clean full-screen presentation */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f5;
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+
+        /* Subtle custom scrollbar inside cards if needed on smaller screens */
+        .card-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .card-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .card-scroll::-webkit-scrollbar-thumb {
+            background-color: #c7d7cd;
+            border-radius: 20px;
+        }
+
+        /* Prevent text selection on interactive quiz buttons */
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col justify-between bg-sage-50 text-slate-800 antialiased selection:bg-sage-200 selection:text-sage-900">
+
+    <!-- Main Presentation Stage -->
+    <main class="flex-1 flex items-center justify-center p-3 sm:p-6 md:p-8 overflow-hidden">
+        <!-- Single Centered Card Container -->
+        <div id="slide-container" class="w-full max-w-5xl h-full max-h-[850px] bg-white rounded-3xl shadow-sm border border-sage-200/80 flex flex-col overflow-hidden relative">
+            
+            <!-- Top Subtle Accent Bar -->
+            <div class="h-1.5 w-full bg-sage-100">
+                <div id="progress-bar" class="h-full bg-sage-600 transition-all duration-300" style="width: 11%;"></div>
+            </div>
+
+            <!-- Dynamic Slide Content Area -->
+            <div id="slide-content" class="flex-1 overflow-y-auto card-scroll p-5 sm:p-8 md:p-10 flex flex-col justify-center">
+                <!-- Content injected by JS -->
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Bottom Minimalist Navigation Controls -->
+    <footer class="h-16 px-4 sm:px-8 pb-3 flex items-center justify-center">
+        <div class="w-full max-w-5xl flex items-center justify-between bg-white/90 backdrop-blur-sm border border-sage-200/80 rounded-2xl px-4 py-2 shadow-sm">
+            
+            <!-- Previous Button -->
+            <button id="btn-prev" onclick="prevSlide()" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm sm:text-base font-medium text-slate-700 hover:bg-sage-100 hover:text-sage-900 disabled:opacity-35 disabled:pointer-events-none transition-colors no-select">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>Previous</span>
+            </button>
+
+            <!-- Slide Counter & Section Indicator -->
+            <div class="flex items-center gap-3">
+                <span id="slide-section-label" class="hidden sm:inline-block text-xs font-semibold uppercase tracking-wider text-sage-600 bg-sage-50 px-3 py-1 rounded-full border border-sage-200">
+                    Welcome
+                </span>
+                <span id="slide-counter" class="text-sm sm:text-base font-semibold text-slate-600 tabular-nums">
+                    1 / 9
+                </span>
+            </div>
+
+            <!-- Next Button -->
+            <button id="btn-next" onclick="nextSlide()" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm sm:text-base font-medium bg-sage-600 text-white hover:bg-sage-700 disabled:opacity-35 disabled:pointer-events-none transition-colors no-select">
+                <span>Next</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+
+        </div>
+    </footer>
+
+    <!-- Application Logic & Lesson Data -->
+    <script>
+        /**
+         * State Management for the Interactive Lesson
+         */
+        let currentSlide = 0;
+
+        // State for Slide 3: Menu Categories Picture Quiz (10 well-framed items with generous sizing)
+        const dishQuizItems = [
+            {
+                id: 'bruschetta',
+                name: 'Tomato & Basil Bruschetta',
+                description: 'Toasted bread with fresh tomatoes, garlic, and olive oil. Eaten before the main meal.',
+                correctCategory: 'Starter',
+                options: ['Starter', 'Dessert', 'Soft Drink'],
+                selected: null,
+                image: 'https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?auto=format&fit=crop&w=1000&q=85',
+                fallbackBg: '#fef3c7',
+                fallbackEmoji: '🥖'
+            },
+            {
+                id: 'salmon',
+                name: 'Grilled Salmon & Vegetables',
+                description: 'A large, filling dish with fish, roasted carrots, and broccoli.',
+                correctCategory: 'Main Course',
+                options: ['Side Dish', 'Main Course', 'Aperitif'],
+                selected: null,
+                image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=1000&q=85',
+                fallbackBg: '#ffedd5',
+                fallbackEmoji: '🍽️'
+            },
+            {
+                id: 'fries',
+                name: 'Crispy French Fries',
+                description: 'A small extra portion of fried potatoes served next to a burger or steak.',
+                correctCategory: 'Side Dish',
+                options: ['Aperitif', 'Side Dish', 'Dessert'],
+                selected: null,
+                image: 'https://images.unsplash.com/photo-1576107232684-1279f390859f?auto=format&fit=crop&w=1000&q=85',
+                fallbackBg: '#fef9c3',
+                fallbackEmoji: '🍟'
+            },
+            {
+                id: 'cake',
+                name: 'Rich Chocolate Layer Cake',
+                description: 'A sweet dish served at the end of a meal with coffee or tea.',
+                correctCategory: 'Dessert',
+                options: ['Starter', 'Main Course', 'Dessert'],
+                selected: null,
+                image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1000&q=85',
+                fallbackBg: '#fae8ff',
+                fallbackEmoji: '🍰'
+            },
+            {
+                id: 'aperitif',
+                name: 'Sparkling Citrus Aperitif',
+                description: 'A light, refreshing drink served before dinner to open your appetite.',
+                correctCategory: 'Aperitif',
+                options: ['Aperitif', 'Main Course', 'Side Dish'],
+                selected: null,
+                image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=1000&q=85',
+                fallbackBg: '#ffedd5',
+                fallbackEmoji: '🥂'
+            },
+            {
+                id: 'lemonade',
+                name: 'Fresh Mint Lemonade',
+                description: 'A cold, non-alcoholic beverage made with lemon juice, water, and mint.',
+                correctCategory: 'Soft Drink',
+                options: ['Starter', 'Soft Drink', 'Dessert'],
+                selected: null,
+                image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=1000&q=85',
+                fallbackBg: '#dcfce7',
+                fallbackEmoji: '🥤'
+            },
+            {
+                id: 'soup',
+                name: 'Creamy Pumpkin Soup',
+                description: 'A warm, smooth bowl of vegetable soup served as a light first course.',
+                correctCategory: 'Soup',
+                options: ['Soup', 'Dessert', 'Aperitif'],
+                selected: null,
+                image: 'https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?auto=format&fit=crop&w=1000&q=85',
+                fallbackBg: '#ffedd5',
+                fallbackEmoji: '🥣'
+            },
+            {
+                id: 'salad',
+                name: 'Fresh Greek Garden Salad',
+                description: 'Crisp lettuce, tomatoes, cucumbers, olives, and feta cheese with olive oil.',
+                correctCategory: 'Salad',
+                options: ['Hot Drink', 'Salad', 'Dessert'],
+                selected: null,
+                image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1000&q=85',
+                fallbackBg: '#dcfce7',
+                fallbackEmoji: '🥗'
+            },
+            {
+                id: 'cappuccino',
+                name: 'Hot Cappuccino',
+                description: 'Warm espresso coffee topped with steamed milk foam, often ordered after dessert.',
+                correctCategory: 'Hot Drink',
+                options: ['Hot Drink', 'Starter', 'Side Dish'],
+                selected: null,
+                image: 'https://images.unsplash.com/photo-1534778101976-62847782c213?auto=format&fit=crop&w=1000&q=85',
+                fallbackBg: '#fef3c7',
+                fallbackEmoji: '☕'
+            },
+            {
+                id: 'pastry',
+                name: 'Butter Croissant',
+                description: 'A flaky, golden baked pastry often eaten for breakfast or with afternoon tea.',
+                correctCategory: 'Pastry',
+                options: ['Main Course', 'Pastry', 'Soft Drink'],
+                selected: null,
+                image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=1000&q=85',
+                fallbackBg: '#fef3c7',
+                fallbackEmoji: '🥐'
+            }
+        ];
+
+        // State for Slide 4: Menu Vocabulary Matching
+        const menuTerms = [
+            { id: 'vegetarian', term: 'Vegetarian (V)', definition: 'Contains no meat or fish.' },
+            { id: 'spicy', term: 'Spicy', definition: 'Has a strong, hot flavour from chilli or pepper.' },
+            { id: 'gluten-free', term: 'Gluten-free (GF)', definition: 'Made without wheat, bread, or regular flour.' },
+            { id: 'chefs-special', term: "Chef's special", definition: 'A special dish recommended by the cook today.' },
+            { id: 'homemade', term: 'Homemade', definition: 'Made fresh in the restaurant kitchen, not bought from a factory.' },
+            { id: 'still-sparkling', term: 'Still or sparkling', definition: 'Water without bubbles or water with bubbles.' },
+            { id: 'side-of', term: 'A side of...', definition: 'An extra small plate of food, like salad or rice.' },
+            { id: 'service-charge', term: 'Service charge', definition: 'An extra fee added to the bill for the waiter’s work.' }
+        ];
+        let selectedTermId = null;
+        let matchedPairs = {};
+        let wrongMatchFlash = null;
+
+        const shuffledDefinitions = [
+            menuTerms[3],
+            menuTerms[0],
+            menuTerms[5],
+            menuTerms[7],
+            menuTerms[1],
+            menuTerms[4],
+            menuTerms[2],
+            menuTerms[6]
+        ];
+
+        // State for Slide 5: Popular Restaurant Idioms & Phrases Matching
+        const idiomTerms = [
+            { id: 'on-the-house', term: 'On the house', definition: 'Free food or drink given by the restaurant (you do not pay for it).' },
+            { id: 'on-the-rocks', term: 'On the rocks', definition: 'A drink served over ice cubes (for example, whisky or juice on the rocks).' },
+            { id: 'doggy-bag', term: 'Doggy bag / To go', definition: 'A box or bag to take your unfinished restaurant food home.' },
+            { id: 'split-bill', term: 'Split the bill', definition: 'To divide the total cost so each person pays their own share.' },
+            { id: 'grab-a-bite', term: 'Grab a bite', definition: 'To quickly get something small or casual to eat.' },
+            { id: 'the-bill', term: 'The bill / check, please', definition: 'The polite phrase you say when you are ready to pay.' },
+            { id: 'steak-cooking', term: 'Rare / Medium / Well-done', definition: 'Different ways to cook meat, from slightly pink inside to fully cooked.' },
+            { id: 'allergic-to', term: 'Be allergic to...', definition: 'When a food (like nuts or milk) makes you feel sick if you eat it.' }
+        ];
+        let selectedIdiomId = null;
+        let matchedIdioms = {};
+        let wrongIdiomFlash = null;
+
+        const shuffledIdiomDefinitions = [
+            idiomTerms[2],
+            idiomTerms[6],
+            idiomTerms[0],
+            idiomTerms[4],
+            idiomTerms[7],
+            idiomTerms[1],
+            idiomTerms[3],
+            idiomTerms[5]
+        ];
+
+        // State for Slide 7: Dialogue Gap-Fill
+        const dialogueGaps = [
+            { id: 0, answer: 'table', userValue: '' },
+            { id: 1, answer: 'recommend', userValue: '' },
+            { id: 2, answer: 'allergic', userValue: '' },
+            { id: 3, answer: 'have', userValue: '' },
+            { id: 4, answer: 'sparkling', userValue: '' },
+            { id: 5, answer: 'bill', userValue: '' }
+        ];
+        const wordBank = ['allergic', 'bill', 'have', 'recommend', 'sparkling', 'table'];
+        let activeGapIndex = 0;
+        let dialogueChecked = false;
+
+        // State for Slide 8: Role-Play Scenario Tab (1, 2, 3, or 4)
+        let activeRoleplayTab = 1;
+
+        /**
+         * Slide Definitions (9 Clean, Focused Cards)
+         */
+        const slides = [
+            // SLIDE 1: Title Card
+            {
+                section: 'Welcome',
+                render: () => `
+                    <div class="flex flex-col items-center text-center max-w-2xl mx-auto py-6">
+                        <div class="w-16 h-16 rounded-2xl bg-sage-100 text-sage-700 flex items-center justify-center mb-6 border border-sage-200">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M5 10v8a2 2 0 002 2h10a2 2 0 002-2v-8M8 6h8l1 4H7l1-4z" />
+                            </svg>
+                        </div>
+                        <span class="px-3.5 py-1 rounded-full bg-sage-100 text-sage-800 text-sm font-semibold tracking-wide mb-4">
+                            A2 English • Speaking & Vocabulary
+                        </span>
+                        <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 tracking-tight mb-5">
+                            At the Restaurant
+                        </h1>
+                        <p class="text-lg sm:text-xl text-slate-600 leading-relaxed mb-8">
+                            Ordering food, understanding the menu, talking about allergies, and dining out with confidence.
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full text-left">
+                            <div class="p-4 rounded-2xl bg-sage-50/80 border border-sage-200/70">
+                                <p class="text-xs font-bold uppercase tracking-wider text-sage-600 mb-1">1. Vocabulary</p>
+                                <p class="text-sm font-medium text-slate-800">Dishes, menu labels & popular idioms</p>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-sage-50/80 border border-sage-200/70">
+                                <p class="text-xs font-bold uppercase tracking-wider text-sage-600 mb-1">2. Useful Phrases</p>
+                                <p class="text-sm font-medium text-slate-800">Ordering, requests & paying</p>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-sage-50/80 border border-sage-200/70">
+                                <p class="text-xs font-bold uppercase tracking-wider text-sage-600 mb-1">3. Role-Play & Menu</p>
+                                <p class="text-sm font-medium text-slate-800">4 real situations & restaurant menu</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+
+            // SLIDE 2: Warm-up Speaking Questions
+            {
+                section: 'Warm-up',
+                render: () => `
+                    <div class="max-w-3xl mx-auto w-full">
+                        <div class="mb-6">
+                            <span class="text-xs font-bold uppercase tracking-wider text-sage-600">Let's Talk</span>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">Warm-Up Questions</h2>
+                            <p class="text-slate-500 text-base mt-1">Discuss these questions together.</p>
+                        </div>
+
+                        <div class="space-y-3.5">
+                            ${[
+                                "How often do you eat out at restaurants or cafés?",
+                                "What is your favourite type of restaurant (Italian, Asian, local food, fast food)? Why?",
+                                "When you visit a new restaurant, do you usually order something familiar or try something new?",
+                                "What do you usually drink with your meal?",
+                                "Have you ever had a funny or bad experience at a restaurant?"
+                            ].map((q, idx) => `
+                                <div class="flex items-start gap-4 p-4 sm:p-5 rounded-2xl bg-sage-50/70 border border-sage-200/80">
+                                    <span class="flex-shrink-0 w-8 h-8 rounded-xl bg-sage-600 text-white font-bold text-sm flex items-center justify-center mt-0.5">
+                                        ${idx + 1}
+                                    </span>
+                                    <p class="text-base sm:text-lg font-medium text-slate-800 leading-snug">
+                                        ${q}
+                                    </p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `
+            },
+
+            // SLIDE 3: Menu Categories & Dish Vocabulary (Large Immersive Cards with Perfect Framing)
+            {
+                section: 'Dish Categories',
+                render: () => {
+                    const correctCount = dishQuizItems.filter(item => item.selected === item.correctCategory).length;
+                    return `
+                        <div class="w-full my-auto">
+                            <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-5 gap-2">
+                                <div>
+                                    <span class="text-xs font-bold uppercase tracking-wider text-sage-600">Vocabulary Practice</span>
+                                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-0.5">What Part of the Menu Is It?</h2>
+                                    <p class="text-slate-500 text-sm sm:text-base">Look at each dish photo in full view and choose the correct category.</p>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-sm font-semibold px-3.5 py-1.5 rounded-xl bg-sage-100 text-sage-800">
+                                        Score: ${correctCount} / ${dishQuizItems.length}
+                                    </span>
+                                    ${correctCount > 0 ? `
+                                        <button onclick="resetDishQuiz()" class="text-xs font-semibold text-slate-500 hover:text-slate-800 underline">
+                                            Reset
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pb-2">
+                                ${dishQuizItems.map((item, idx) => {
+                                    const isCorrect = item.selected === item.correctCategory;
+                                    return `
+                                        <div class="rounded-2xl border ${isCorrect ? 'border-emerald-300 bg-emerald-50/30' : 'border-sage-200 bg-white'} overflow-hidden flex flex-col shadow-sm">
+                                            <!-- Immersive Full-View Dish Photo Box -->
+                                            <div class="relative w-full h-52 sm:h-56 bg-sage-100 overflow-hidden flex items-center justify-center">
+                                                <img 
+                                                    src="${item.image}" 
+                                                    alt="${item.name}" 
+                                                    class="w-full h-full object-cover object-center scale-100 hover:scale-105 transition-transform duration-500"
+                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                                />
+                                                <div style="display:none; background-color:${item.fallbackBg};" class="w-full h-full items-center justify-center text-6xl">
+                                                    ${item.fallbackEmoji}
+                                                </div>
+                                                ${isCorrect ? `
+                                                    <span class="absolute top-3 right-3 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-sm">
+                                                        ✓ ${item.correctCategory}
+                                                    </span>
+                                                ` : ''}
+                                            </div>
+
+                                            <!-- Dish Info & Choice Buttons -->
+                                            <div class="p-4 flex-1 flex flex-col justify-between">
+                                                <div>
+                                                    <h3 class="font-bold text-slate-900 text-base leading-tight">${item.name}</h3>
+                                                    <p class="text-xs text-slate-500 mt-1 leading-relaxed">${item.description}</p>
+                                                </div>
+
+                                                <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-1.5">
+                                                    ${item.options.map(opt => {
+                                                        let btnClass = 'bg-sage-50 text-slate-700 border-sage-200 hover:bg-sage-100';
+                                                        if (item.selected === opt) {
+                                                            if (opt === item.correctCategory) {
+                                                                btnClass = 'bg-emerald-600 text-white border-emerald-600 font-semibold';
+                                                            } else {
+                                                                btnClass = 'bg-rose-500 text-white border-rose-500 font-semibold';
+                                                            }
+                                                        } else if (isCorrect && opt === item.correctCategory) {
+                                                            btnClass = 'bg-emerald-600 text-white border-emerald-600 font-semibold';
+                                                        }
+                                                        return `
+                                                            <button 
+                                                                onclick="selectDishOption(${idx}, '${opt}')"
+                                                                class="flex-1 min-w-[78px] text-xs py-2 px-2 rounded-xl border transition-colors no-select ${btnClass}">
+                                                                ${opt}
+                                                            </button>
+                                                        `;
+                                                    }).join('')}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+
+            // SLIDE 4: Menu Vocabulary & Useful Menu Words (Interactive Matching)
+            {
+                section: 'Menu Words',
+                render: () => {
+                    const matchedCount = Object.keys(matchedPairs).length;
+                    return `
+                        <div class="max-w-4xl mx-auto w-full">
+                            <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-2">
+                                <div>
+                                    <span class="text-xs font-bold uppercase tracking-wider text-sage-600">Reading a Menu</span>
+                                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-0.5">Match the Menu Words</h2>
+                                    <p class="text-slate-500 text-sm sm:text-base">Click a word on the left, then click its meaning on the right.</p>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-sm font-semibold px-3.5 py-1.5 rounded-xl bg-sage-100 text-sage-800">
+                                        Matched: ${matchedCount} / ${menuTerms.length}
+                                    </span>
+                                    ${matchedCount > 0 ? `
+                                        <button onclick="resetMenuMatching()" class="text-xs font-semibold text-slate-500 hover:text-slate-800 underline">
+                                            Reset
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                                <!-- Left Column: Menu Terms -->
+                                <div class="space-y-2.5">
+                                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Menu Words & Labels</p>
+                                    ${menuTerms.map(item => {
+                                        const isMatched = matchedPairs[item.id];
+                                        const isSelected = selectedTermId === item.id;
+                                        let style = 'bg-white border-sage-200 text-slate-800 hover:border-sage-400';
+                                        if (isMatched) {
+                                            style = 'bg-emerald-50 border-emerald-300 text-emerald-800 opacity-75 cursor-default';
+                                        } else if (isSelected) {
+                                            style = 'bg-sage-600 border-sage-600 text-white font-semibold shadow-xs';
+                                        }
+                                        return `
+                                            <button 
+                                                onclick="selectTerm('${item.id}')"
+                                                ${isMatched ? 'disabled' : ''}
+                                                class="w-full text-left px-4 py-3 rounded-xl border text-sm sm:text-base font-medium transition-colors flex items-center justify-between no-select ${style}">
+                                                <span>${item.term}</span>
+                                                ${isMatched ? '<span class="text-emerald-600 font-bold">✓</span>' : ''}
+                                            </button>
+                                        `;
+                                    }).join('')}
+                                </div>
+
+                                <!-- Right Column: Simple Meanings -->
+                                <div class="space-y-2.5">
+                                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Simple Meanings</p>
+                                    ${shuffledDefinitions.map(item => {
+                                        const isMatched = matchedPairs[item.id];
+                                        const isWrong = wrongMatchFlash === item.id;
+                                        let style = 'bg-sage-50/70 border-sage-200 text-slate-700 hover:bg-sage-100';
+                                        if (isMatched) {
+                                            style = 'bg-emerald-50 border-emerald-300 text-emerald-800 opacity-75 cursor-default';
+                                        } else if (isWrong) {
+                                            style = 'bg-rose-50 border-rose-400 text-rose-800';
+                                        }
+                                        return `
+                                            <button 
+                                                onclick="selectDefinition('${item.id}')"
+                                                ${isMatched ? 'disabled' : ''}
+                                                class="w-full text-left px-4 py-3 rounded-xl border text-sm leading-snug transition-colors no-select ${style}">
+                                                ${item.definition}
+                                            </button>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+
+            // SLIDE 5: Popular Restaurant Idioms & Phrases (Interactive Matching)
+            {
+                section: 'Popular Expressions',
+                render: () => {
+                    const matchedCount = Object.keys(matchedIdioms).length;
+                    return `
+                        <div class="max-w-4xl mx-auto w-full">
+                            <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-2">
+                                <div>
+                                    <span class="text-xs font-bold uppercase tracking-wider text-sage-600">Natural English</span>
+                                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-0.5">Popular Restaurant Phrases & Idioms</h2>
+                                    <p class="text-slate-500 text-sm sm:text-base">Match each common expression on the left with what it means.</p>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-sm font-semibold px-3.5 py-1.5 rounded-xl bg-sage-100 text-sage-800">
+                                        Matched: ${matchedCount} / ${idiomTerms.length}
+                                    </span>
+                                    ${matchedCount > 0 ? `
+                                        <button onclick="resetIdiomMatching()" class="text-xs font-semibold text-slate-500 hover:text-slate-800 underline">
+                                            Reset
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                                <!-- Left Column: Idioms & Phrases -->
+                                <div class="space-y-2.5">
+                                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Expression</p>
+                                    ${idiomTerms.map(item => {
+                                        const isMatched = matchedIdioms[item.id];
+                                        const isSelected = selectedIdiomId === item.id;
+                                        let style = 'bg-white border-sage-200 text-slate-800 hover:border-sage-400';
+                                        if (isMatched) {
+                                            style = 'bg-emerald-50 border-emerald-300 text-emerald-800 opacity-75 cursor-default';
+                                        } else if (isSelected) {
+                                            style = 'bg-sage-600 border-sage-600 text-white font-semibold shadow-xs';
+                                        }
+                                        return `
+                                            <button 
+                                                onclick="selectIdiom('${item.id}')"
+                                                ${isMatched ? 'disabled' : ''}
+                                                class="w-full text-left px-4 py-3 rounded-xl border text-sm sm:text-base font-medium transition-colors flex items-center justify-between no-select ${style}">
+                                                <span>${item.term}</span>
+                                                ${isMatched ? '<span class="text-emerald-600 font-bold">✓</span>' : ''}
+                                            </button>
+                                        `;
+                                    }).join('')}
+                                </div>
+
+                                <!-- Right Column: Meanings -->
+                                <div class="space-y-2.5">
+                                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Meaning</p>
+                                    ${shuffledIdiomDefinitions.map(item => {
+                                        const isMatched = matchedIdioms[item.id];
+                                        const isWrong = wrongIdiomFlash === item.id;
+                                        let style = 'bg-sage-50/70 border-sage-200 text-slate-700 hover:bg-sage-100';
+                                        if (isMatched) {
+                                            style = 'bg-emerald-50 border-emerald-300 text-emerald-800 opacity-75 cursor-default';
+                                        } else if (isWrong) {
+                                            style = 'bg-rose-50 border-rose-400 text-rose-800';
+                                        }
+                                        return `
+                                            <button 
+                                                onclick="selectIdiomDefinition('${item.id}')"
+                                                ${isMatched ? 'disabled' : ''}
+                                                class="w-full text-left px-4 py-3 rounded-xl border text-sm leading-snug transition-colors no-select ${style}">
+                                                ${item.definition}
+                                            </button>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+
+            // SLIDE 6: Useful Restaurant Phrases (Categorized Reference)
+            {
+                section: 'Useful Phrases',
+                render: () => `
+                    <div class="max-w-4xl mx-auto w-full">
+                        <div class="mb-5">
+                            <span class="text-xs font-bold uppercase tracking-wider text-sage-600">Language Bank</span>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-0.5">What Do You Say at a Restaurant?</h2>
+                            <p class="text-slate-500 text-sm sm:text-base">Useful expressions for customers and waiters.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Box 1: Arriving & Seating -->
+                            <div class="p-4 sm:p-5 rounded-2xl bg-sage-50/70 border border-sage-200">
+                                <h3 class="font-bold text-sage-800 text-base mb-3 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-sage-600"></span>
+                                    1. Arriving & Seating
+                                </h3>
+                                <ul class="space-y-2 text-sm sm:text-base">
+                                    <li class="text-slate-700"><span class="font-semibold text-slate-900">Customer:</span> "A table for two, please."</li>
+                                    <li class="text-slate-700"><span class="font-semibold text-slate-900">Customer:</span> "Could we sit near the window?"</li>
+                                    <li class="text-slate-600"><span class="font-semibold text-sage-700">Waiter:</span> "Right this way / Follow me, please."</li>
+                                    <li class="text-slate-600"><span class="font-semibold text-sage-700">Waiter:</span> "Here is the menu."</li>
+                                </ul>
+                            </div>
+
+                            <!-- Box 2: Ordering Food & Drinks -->
+                            <div class="p-4 sm:p-5 rounded-2xl bg-sage-50/70 border border-sage-200">
+                                <h3 class="font-bold text-sage-800 text-base mb-3 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-sage-600"></span>
+                                    2. Ordering Food & Drinks
+                                </h3>
+                                <ul class="space-y-2 text-sm sm:text-base">
+                                    <li class="text-slate-600"><span class="font-semibold text-sage-700">Waiter:</span> "Are you ready to order?"</li>
+                                    <li class="text-slate-700"><span class="font-semibold text-slate-900">Customer:</span> "I'd like the grilled salmon, please."</li>
+                                    <li class="text-slate-700"><span class="font-semibold text-slate-900">Customer:</span> "Could I have a lemonade on the rocks?"</li>
+                                    <li class="text-slate-700"><span class="font-semibold text-slate-900">Customer:</span> "What do you recommend?"</li>
+                                </ul>
+                            </div>
+
+                            <!-- Box 3: Allergies & Custom Requests -->
+                            <div class="p-4 sm:p-5 rounded-2xl bg-sage-50/70 border border-sage-200">
+                                <h3 class="font-bold text-sage-800 text-base mb-3 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-sage-600"></span>
+                                    3. Allergies & Special Wishes
+                                </h3>
+                                <ul class="space-y-2 text-sm sm:text-base">
+                                    <li class="text-slate-700"><span class="font-semibold text-slate-900">Customer:</span> "I'm allergic to nuts / dairy."</li>
+                                    <li class="text-slate-700"><span class="font-semibold text-slate-900">Customer:</span> "Could you make it without oil / onions?"</li>
+                                    <li class="text-slate-700"><span class="font-semibold text-slate-900">Customer:</span> "Can I have extra sauce on the side?"</li>
+                                    <li class="text-slate-600"><span class="font-semibold text-sage-700">Waiter:</span> "No problem, I'll tell the chef."</li>
+                                </ul>
+                            </div>
+
+                            <!-- Box 4: Leftovers & Paying the Bill -->
+                            <div class="p-4 sm:p-5 rounded-2xl bg-sage-50/70 border border-sage-200">
+                                <h3 class="font-bold text-sage-800 text-base mb-3 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-sage-600"></span>
+                                    4. Leftovers & Paying
+                                </h3>
+                                <ul class="space-y-2 text-sm sm:text-base">
+                                    <li class="text-slate-700"><span class="font-semibold text-slate-900">Customer:</span> "Could I have a doggy bag for the rest?"</li>
+                                    <li class="text-slate-700"><span class="font-semibold text-slate-900">Customer:</span> "Can we split the bill, please?"</li>
+                                    <li class="text-slate-600"><span class="font-semibold text-sage-700">Waiter:</span> "Dessert is on the house tonight!"</li>
+                                    <li class="text-slate-700"><span class="font-semibold text-slate-900">Customer:</span> "Keep the change, thank you."</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+
+            // SLIDE 7: Interactive Dialogue Gap-Fill
+            {
+                section: 'Dialogue Practice',
+                render: () => {
+                    const renderGapButton = (index) => {
+                        const gap = dialogueGaps[index];
+                        const isActive = activeGapIndex === index && !dialogueChecked;
+                        const isCorrect = dialogueChecked && gap.userValue === gap.answer;
+                        const isWrong = dialogueChecked && gap.userValue !== gap.answer;
+
+                        let classes = 'inline-block min-w-[115px] px-3 py-0.5 mx-1 rounded-lg border-b-2 text-center font-semibold transition-colors cursor-pointer no-select ';
+                        if (isCorrect) {
+                            classes += 'bg-emerald-100 border-emerald-600 text-emerald-900';
+                        } else if (isWrong) {
+                            classes += 'bg-rose-100 border-rose-500 text-rose-900';
+                        } else if (isActive) {
+                            classes += 'bg-sage-200 border-sage-700 text-sage-900';
+                        } else if (gap.userValue) {
+                            classes += 'bg-sage-100 border-sage-500 text-slate-900';
+                        } else {
+                            classes += 'bg-slate-100 border-slate-400 text-slate-400';
+                        }
+
+                        return `<button onclick="setActiveGap(${index})" class="${classes}">${gap.userValue || `(${index + 1}) _____`}</button>`;
+                    };
+
+                    const allFilled = dialogueGaps.every(g => g.userValue !== '');
+                    const correctTotal = dialogueGaps.filter(g => g.userValue === g.answer).length;
+
+                    return `
+                        <div class="max-w-3xl mx-auto w-full">
+                            <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-4 gap-2">
+                                <div>
+                                    <span class="text-xs font-bold uppercase tracking-wider text-sage-600">Gap-Fill Exercise</span>
+                                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-0.5">Complete the Conversation</h2>
+                                    <p class="text-slate-500 text-sm sm:text-base">Click a blank space, then click the correct word below.</p>
+                                </div>
+                                ${dialogueChecked ? `
+                                    <span class="text-sm font-semibold px-3.5 py-1.5 rounded-xl ${correctTotal === 6 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                                        Result: ${correctTotal} / 6
+                                    </span>
+                                ` : ''}
+                            </div>
+
+                            <!-- Word Bank Chips -->
+                            <div class="p-3.5 rounded-2xl bg-sage-50 border border-sage-200 mb-5 flex flex-wrap items-center gap-2">
+                                <span class="text-xs font-bold uppercase tracking-wider text-sage-700 mr-1">Word Bank:</span>
+                                ${wordBank.map(word => {
+                                    const used = dialogueGaps.some(g => g.userValue === word);
+                                    return `
+                                        <button 
+                                            onclick="fillActiveGap('${word}')"
+                                            class="px-3.5 py-1.5 rounded-xl text-sm font-semibold border transition-colors no-select ${used ? 'bg-white text-slate-400 border-slate-200' : 'bg-white text-slate-800 border-sage-300 hover:bg-sage-600 hover:text-white shadow-2xs'}">
+                                            ${word}
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
+
+                            <!-- Dialogue Box -->
+                            <div class="p-5 sm:p-6 rounded-2xl bg-white border border-sage-200 space-y-3.5 text-base sm:text-lg leading-relaxed">
+                                <p><span class="font-bold text-slate-900">Customer:</span> Good evening. A ${renderGapButton(0)} for two, please.</p>
+                                <p><span class="font-bold text-sage-700">Waiter:</span> Of course. Follow me, please. Here are your menus.</p>
+                                <p><span class="font-bold text-slate-900">Customer:</span> Thank you. What do you ${renderGapButton(1)}?</p>
+                                <p><span class="font-bold text-sage-700">Waiter:</span> Today's chef's special is the mushroom risotto. It's very popular.</p>
+                                <p><span class="font-bold text-slate-900">Customer:</span> That sounds great, I'll ${renderGapButton(3)} that. Also, I'm ${renderGapButton(2)} to nuts. Does it contain any nuts?</p>
+                                <p><span class="font-bold text-sage-700">Waiter:</span> No, it's completely nut-free. And what would you like to drink?</p>
+                                <p><span class="font-bold text-slate-900">Customer:</span> Just a bottle of ${renderGapButton(4)} water, please.</p>
+                                <p class="pt-2 border-t border-slate-100 italic text-slate-500 text-sm">(After the meal...)</p>
+                                <p><span class="font-bold text-slate-900">Customer:</span> Excuse me, could we have the ${renderGapButton(5)}, please? We'd like to pay by card.</p>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="mt-5 flex items-center justify-end gap-3">
+                                <button onclick="resetDialogue()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
+                                    Clear All
+                                </button>
+                                <button 
+                                    onclick="checkDialogue()" 
+                                    ${!allFilled ? 'disabled' : ''}
+                                    class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-sage-600 text-white hover:bg-sage-700 disabled:opacity-40 transition-colors">
+                                    Check Answers
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+
+            // SLIDE 8: 4 Distinct Speaking Role-Play Scenarios
+            {
+                section: 'Role-Play Situations',
+                render: () => `
+                    <div class="max-w-4xl mx-auto w-full">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+                            <div>
+                                <span class="text-xs font-bold uppercase tracking-wider text-sage-600">Speaking Practice</span>
+                                <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-0.5">Restaurant Role-Play Situations</h2>
+                            </div>
+
+                            <!-- 4 Scenario Switcher Tabs -->
+                            <div class="inline-flex flex-wrap p-1 rounded-xl bg-sage-100 border border-sage-200 self-start gap-1">
+                                <button 
+                                    onclick="setRoleplayTab(1)" 
+                                    class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeRoleplayTab === 1 ? 'bg-white text-sage-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'}">
+                                    1. Allergies & Oil
+                                </button>
+                                <button 
+                                    onclick="setRoleplayTab(2)" 
+                                    class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeRoleplayTab === 2 ? 'bg-white text-sage-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'}">
+                                    2. Steak & Bill Split
+                                </button>
+                                <button 
+                                    onclick="setRoleplayTab(3)" 
+                                    class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeRoleplayTab === 3 ? 'bg-white text-sage-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'}">
+                                    3. Birthday & Doggy Bag
+                                </button>
+                                <button 
+                                    onclick="setRoleplayTab(4)" 
+                                    class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeRoleplayTab === 4 ? 'bg-white text-sage-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'}">
+                                    4. Wrong Dish & Apology
+                                </button>
+                            </div>
+                        </div>
+
+                        ${activeRoleplayTab === 1 ? `
+                            <!-- Scenario 1: Customizing Your Order & Allergies -->
+                            <div class="p-3.5 rounded-2xl bg-sage-50 border border-sage-200 mb-4">
+                                <p class="text-sm sm:text-base text-slate-700">
+                                    <span class="font-bold text-sage-800">Situation 1 — Customizing Your Order & Allergies:</span> You want to order lunch, but you have strict food preferences and an allergy. Act out the full conversation!
+                                </p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Customer Card -->
+                                <div class="p-4 sm:p-5 rounded-2xl bg-white border-2 border-sage-300 shadow-2xs">
+                                    <span class="px-3 py-1 rounded-full bg-sage-600 text-white text-xs font-bold uppercase tracking-wider">Customer (Your Wishes)</span>
+                                    <h3 class="text-base font-bold text-slate-900 mt-2 mb-2">Include these points:</h3>
+                                    <ul class="space-y-2 text-sm text-slate-700 list-disc pl-4">
+                                        <li>Order a starter (Greek salad) and main dish (salmon).</li>
+                                        <li>Say you are <strong>allergic to nuts and garlic</strong> — ask if dishes are safe.</li>
+                                        <li>Ask to <strong>remove onions</strong> and cook vegetables <strong>without oil</strong>.</li>
+                                        <li>Ask for extra lemon sauce on the side.</li>
+                                        <li>Order a bottle of sparkling water.</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Waiter Card -->
+                                <div class="p-4 sm:p-5 rounded-2xl bg-sage-50/60 border border-sage-200">
+                                    <span class="px-3 py-1 rounded-full bg-slate-700 text-white text-xs font-bold uppercase tracking-wider">Waiter</span>
+                                    <h3 class="text-base font-bold text-slate-900 mt-2 mb-2">Your Role:</h3>
+                                    <ul class="space-y-2 text-sm text-slate-700 list-disc pl-4">
+                                        <li>Greet warmly and ask if they are ready to order.</li>
+                                        <li>Check ingredients and reassure them about allergies.</li>
+                                        <li>Confirm kitchen changes (no oil, no onions, sauce on side).</li>
+                                        <li>Repeat the full order politely at the end.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        ` : activeRoleplayTab === 2 ? `
+                            <!-- Scenario 2: Drinks, Cooking Preferences & Splitting the Bill -->
+                            <div class="p-3.5 rounded-2xl bg-sage-50 border border-sage-200 mb-4">
+                                <p class="text-sm sm:text-base text-slate-700">
+                                    <span class="font-bold text-sage-800">Situation 2 — Dinner with a Friend:</span> You are having dinner with a friend. You want specific cooking styles, drinks, and separate payments at the end.
+                                </p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Customer Card -->
+                                <div class="p-4 sm:p-5 rounded-2xl bg-white border-2 border-sage-300 shadow-2xs">
+                                    <span class="px-3 py-1 rounded-full bg-sage-600 text-white text-xs font-bold uppercase tracking-wider">Customer (Your Wishes)</span>
+                                    <h3 class="text-base font-bold text-slate-900 mt-2 mb-2">Include these points:</h3>
+                                    <ul class="space-y-2 text-sm text-slate-700 list-disc pl-4">
+                                        <li>Ask the waiter: <em>"What is today's chef's special?"</em></li>
+                                        <li>Order a beef burger or steak (specify <strong>medium</strong> or <strong>well-done</strong>).</li>
+                                        <li>Swap side dish: ask for green salad instead of French fries.</li>
+                                        <li>Order an aperitif or juice <strong>"on the rocks"</strong>.</li>
+                                        <li>Ask to <strong>split the bill</strong> with your friend and pay by card.</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Waiter Card -->
+                                <div class="p-4 sm:p-5 rounded-2xl bg-sage-50/60 border border-sage-200">
+                                    <span class="px-3 py-1 rounded-full bg-slate-700 text-white text-xs font-bold uppercase tracking-wider">Waiter</span>
+                                    <h3 class="text-base font-bold text-slate-900 mt-2 mb-2">Your Role:</h3>
+                                    <ul class="space-y-2 text-sm text-slate-700 list-disc pl-4">
+                                        <li>Describe today's chef's special enthusiastically.</li>
+                                        <li>Ask how they want their meat cooked (rare, medium, well-done).</li>
+                                        <li>Agree to change side dish and confirm drink on the rocks.</li>
+                                        <li>Bring two separate bills when asked.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        ` : activeRoleplayTab === 3 ? `
+                            <!-- Scenario 3: Busy Evening, Doggy Bag & On the House -->
+                            <div class="p-3.5 rounded-2xl bg-sage-50 border border-sage-200 mb-4">
+                                <p class="text-sm sm:text-base text-slate-700">
+                                    <span class="font-bold text-sage-800">Situation 3 — A Special Birthday Evening:</span> It is your birthday. Ask about vegetarian options, take leftovers home, and enjoy a nice surprise!
+                                </p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Customer Card -->
+                                <div class="p-4 sm:p-5 rounded-2xl bg-white border-2 border-sage-300 shadow-2xs">
+                                    <span class="px-3 py-1 rounded-full bg-sage-600 text-white text-xs font-bold uppercase tracking-wider">Customer (Your Wishes)</span>
+                                    <h3 class="text-base font-bold text-slate-900 mt-2 mb-2">Include these points:</h3>
+                                    <ul class="space-y-2 text-sm text-slate-700 list-disc pl-4">
+                                        <li>Ask for a quiet table near the window for two.</li>
+                                        <li>Ask which dishes are <strong>vegetarian</strong> and <strong>homemade</strong>.</li>
+                                        <li>Order soup, main course, and a hot cappuccino.</li>
+                                        <li>Cannot finish food — ask for a <strong>doggy bag</strong> to take home.</li>
+                                        <li>Mention it is your <strong>birthday</strong> and react to free dessert!</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Waiter Card -->
+                                <div class="p-4 sm:p-5 rounded-2xl bg-sage-50/60 border border-sage-200">
+                                    <span class="px-3 py-1 rounded-full bg-slate-700 text-white text-xs font-bold uppercase tracking-wider">Waiter</span>
+                                    <h3 class="text-base font-bold text-slate-900 mt-2 mb-2">Your Role:</h3>
+                                    <ul class="space-y-2 text-sm text-slate-700 list-disc pl-4">
+                                        <li>Find a nice window table and recommend pumpkin soup & risotto.</li>
+                                        <li>Offer to pack leftovers in a takeaway box (doggy bag).</li>
+                                        <li>Wish Happy Birthday and bring a slice of cake <strong>"on the house"</strong>!</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        ` : `
+                            <!-- Scenario 4: Wrong Order & Polite Complaint (NEW) -->
+                            <div class="p-3.5 rounded-2xl bg-sage-50 border border-sage-200 mb-4">
+                                <p class="text-sm sm:text-base text-slate-700">
+                                    <span class="font-bold text-sage-800">Situation 4 — Resolving a Mistake (Polite Complaint):</span> The waiter brings the wrong dish or forgets your drink. You need to handle the situation politely in English.
+                                </p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Customer Card -->
+                                <div class="p-4 sm:p-5 rounded-2xl bg-white border-2 border-sage-300 shadow-2xs">
+                                    <span class="px-3 py-1 rounded-full bg-sage-600 text-white text-xs font-bold uppercase tracking-wider">Customer (Your Wishes)</span>
+                                    <h3 class="text-base font-bold text-slate-900 mt-2 mb-2">Include these points:</h3>
+                                    <ul class="space-y-2 text-sm text-slate-700 list-disc pl-4">
+                                        <li>Politely tell the waiter: <em>"Excuse me, I ordered the grilled salmon, but this is chicken."</em></li>
+                                        <li>Remind them you also ordered a sparkling lemonade 15 minutes ago and it hasn't arrived.</li>
+                                        <li>Ask how long it will take to get the correct dish.</li>
+                                        <li>Accept the waiter's apology and ask for a free coffee or dessert for the trouble.</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Waiter Card -->
+                                <div class="p-4 sm:p-5 rounded-2xl bg-sage-50/60 border border-sage-200">
+                                    <span class="px-3 py-1 rounded-full bg-slate-700 text-white text-xs font-bold uppercase tracking-wider">Waiter</span>
+                                    <h3 class="text-base font-bold text-slate-900 mt-2 mb-2">Your Role:</h3>
+                                    <ul class="space-y-2 text-sm text-slate-700 list-disc pl-4">
+                                        <li>Apologize sincerely: <em>"I am so sorry about that! Let me fix this right away."</em></li>
+                                        <li>Explain that the kitchen is very busy tonight.</li>
+                                        <li>Rush to bring the correct dish and cold lemonade immediately.</li>
+                                        <li>Offer dessert <strong>"on the house"</strong> to make up for the mistake.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+                `
+            },
+
+            // SLIDE 9: Final Slide — The Sage Bistro Menu & Free Discussion
+            {
+                section: 'The Sage Bistro Menu',
+                render: () => `
+                    <div class="max-w-4xl mx-auto w-full">
+                        <!-- Menu Header -->
+                        <div class="text-center border-b border-sage-200 pb-3 mb-4">
+                            <p class="text-xs font-bold uppercase tracking-[0.2em] text-sage-600">Final Practice & Discussion</p>
+                            <h2 class="font-serif text-3xl sm:text-4xl font-bold text-slate-900 mt-0.5">The Sage Bistro</h2>
+                            <div class="flex flex-wrap justify-center gap-2.5 mt-2 text-xs font-medium text-slate-500">
+                                <span class="px-2 py-0.5 rounded bg-sage-100 text-sage-800">V = Vegetarian</span>
+                                <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800">GF = Gluten-Free</span>
+                                <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800">🌶️ = Spicy</span>
+                            </div>
+                        </div>
+
+                        <!-- Two-Column Menu Layout -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
+                            
+                            <!-- Left Column: Starters & Mains -->
+                            <div class="space-y-4">
+                                <!-- Starters -->
+                                <div>
+                                    <h3 class="font-serif text-base font-bold text-sage-800 border-b border-sage-200 pb-1 mb-2">Starters</h3>
+                                    <div class="space-y-2">
+                                        <div>
+                                            <div class="flex justify-between font-semibold text-slate-900">
+                                                <span>Tomato & Basil Bruschetta <span class="text-xs font-normal text-sage-700">(V)</span></span>
+                                                <span>$7.50</span>
+                                            </div>
+                                            <p class="text-xs text-slate-500">Toasted sourdough bread with fresh tomatoes, garlic & olive oil.</p>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between font-semibold text-slate-900">
+                                                <span>Homemade Pumpkin Soup <span class="text-xs font-normal text-sage-700">(V, GF)</span></span>
+                                                <span>$8.00</span>
+                                            </div>
+                                            <p class="text-xs text-slate-500">Creamy roasted pumpkin soup topped with toasted pumpkin seeds.</p>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between font-semibold text-slate-900">
+                                                <span>Spicy Garlic Prawns 🌶️ <span class="text-xs font-normal text-amber-700">(GF)</span></span>
+                                                <span>$10.50</span>
+                                            </div>
+                                            <p class="text-xs text-slate-500">Pan-fried prawns in chilli, lemon, and garlic butter.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Main Courses -->
+                                <div>
+                                    <h3 class="font-serif text-base font-bold text-sage-800 border-b border-sage-200 pb-1 mb-2">Main Courses</h3>
+                                    <div class="space-y-2">
+                                        <div>
+                                            <div class="flex justify-between font-semibold text-slate-900">
+                                                <span>Grilled Salmon Fillet <span class="text-xs font-normal text-amber-700">(GF)</span></span>
+                                                <span>$19.50</span>
+                                            </div>
+                                            <p class="text-xs text-slate-500">Served with roasted seasonal vegetables and herb sauce.</p>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between font-semibold text-slate-900">
+                                                <span>Wild Mushroom Risotto <span class="text-xs font-normal text-sage-700">(V, GF)</span></span>
+                                                <span>$16.00</span>
+                                            </div>
+                                            <p class="text-xs text-slate-500">Chef's special! Creamy Italian rice with parmesan cheese & thyme.</p>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between font-semibold text-slate-900">
+                                                <span>Classic Beef Burger</span>
+                                                <span>$17.00</span>
+                                            </div>
+                                            <p class="text-xs text-slate-500">100% beef patty, cheddar, lettuce, tomato, and house sauce.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Sides, Desserts & Drinks -->
+                            <div class="space-y-4">
+                                <!-- Side Dishes -->
+                                <div>
+                                    <h3 class="font-serif text-base font-bold text-sage-800 border-b border-sage-200 pb-1 mb-2">Side Dishes</h3>
+                                    <div class="space-y-1 text-slate-800">
+                                        <div class="flex justify-between">
+                                            <span>Crispy French Fries <span class="text-xs text-sage-700">(V, GF)</span></span>
+                                            <span class="font-semibold">$4.50</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Mixed Green Salad <span class="text-xs text-sage-700">(V, GF)</span></span>
+                                            <span class="font-semibold">$5.00</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Garlic Bread <span class="text-xs text-sage-700">(V)</span></span>
+                                            <span class="font-semibold">$4.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Desserts -->
+                                <div>
+                                    <h3 class="font-serif text-base font-bold text-sage-800 border-b border-sage-200 pb-1 mb-2">Desserts</h3>
+                                    <div class="space-y-1.5">
+                                        <div>
+                                            <div class="flex justify-between font-semibold text-slate-900">
+                                                <span>Warm Chocolate Cake <span class="text-xs font-normal text-sage-700">(V)</span></span>
+                                                <span>$7.50</span>
+                                            </div>
+                                            <p class="text-xs text-slate-500">Served with a scoop of vanilla ice cream. (Contains nuts)</p>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between font-semibold text-slate-900">
+                                                <span>Fresh Berry Pavlova <span class="text-xs font-normal text-sage-700">(V, GF)</span></span>
+                                                <span>$7.00</span>
+                                            </div>
+                                            <p class="text-xs text-slate-500">Crispy meringue with whipped cream and strawberries.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Drinks & Aperitifs -->
+                                <div>
+                                    <h3 class="font-serif text-base font-bold text-sage-800 border-b border-sage-200 pb-1 mb-2">Drinks & Aperitifs</h3>
+                                    <div class="space-y-1 text-slate-800">
+                                        <div class="flex justify-between">
+                                            <span>Sparkling Citrus Aperitif <span class="text-xs text-slate-500">(Non-alcoholic)</span></span>
+                                            <span class="font-semibold">$6.00</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Homemade Mint Lemonade</span>
+                                            <span class="font-semibold">$4.50</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Still or Sparkling Water <span class="text-xs text-slate-500">(500ml)</span></span>
+                                            <span class="font-semibold">$3.00</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Espresso / Cappuccino / Herbal Tea</span>
+                                            <span class="font-semibold">$3.50</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Bottom Discussion Prompts for Teacher & Student -->
+                        <div class="mt-5 p-3.5 sm:p-4 rounded-2xl bg-sage-50 border border-sage-200">
+                            <p class="text-xs font-bold uppercase tracking-wider text-sage-700 mb-1.5">Let's Discuss the Menu:</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs sm:text-sm text-slate-700">
+                                <div class="bg-white p-2.5 rounded-xl border border-sage-200/70">
+                                    <strong>1.</strong> What starter, main, and dessert would you order here?
+                                </div>
+                                <div class="bg-white p-2.5 rounded-xl border border-sage-200/70">
+                                    <strong>2.</strong> Which dishes can a vegetarian or nut-allergic guest eat?
+                                </div>
+                                <div class="bg-white p-2.5 rounded-xl border border-sage-200/70">
+                                    <strong>3.</strong> Calculate your total bill — how much would you tip?
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        /**
+         * Interactive Handlers
+         */
+
+        // Slide 3: Dish Category Quiz
+        function selectDishOption(dishIndex, option) {
+            dishQuizItems[dishIndex].selected = option;
+            renderCurrentSlide();
+        }
+
+        function resetDishQuiz() {
+            dishQuizItems.forEach(item => item.selected = null);
+            renderCurrentSlide();
+        }
+
+        // Slide 4: Menu Term Matching
+        function selectTerm(termId) {
+            if (matchedPairs[termId]) return;
+            selectedTermId = (selectedTermId === termId) ? null : termId;
+            wrongMatchFlash = null;
+            renderCurrentSlide();
+        }
+
+        function selectDefinition(defId) {
+            if (matchedPairs[defId] || !selectedTermId) return;
+
+            if (selectedTermId === defId) {
+                matchedPairs[defId] = true;
+                selectedTermId = null;
+                wrongMatchFlash = null;
+                renderCurrentSlide();
+            } else {
+                wrongMatchFlash = defId;
+                renderCurrentSlide();
+                setTimeout(() => {
+                    wrongMatchFlash = null;
+                    renderCurrentSlide();
+                }, 650);
+            }
+        }
+
+        function resetMenuMatching() {
+            selectedTermId = null;
+            matchedPairs = {};
+            wrongMatchFlash = null;
+            renderCurrentSlide();
+        }
+
+        // Slide 5: Popular Restaurant Idioms Matching
+        function selectIdiom(idiomId) {
+            if (matchedIdioms[idiomId]) return;
+            selectedIdiomId = (selectedIdiomId === idiomId) ? null : idiomId;
+            wrongIdiomFlash = null;
+            renderCurrentSlide();
+        }
+
+        function selectIdiomDefinition(defId) {
+            if (matchedIdioms[defId] || !selectedIdiomId) return;
+
+            if (selectedIdiomId === defId) {
+                matchedIdioms[defId] = true;
+                selectedIdiomId = null;
+                wrongIdiomFlash = null;
+                renderCurrentSlide();
+            } else {
+                wrongIdiomFlash = defId;
+                renderCurrentSlide();
+                setTimeout(() => {
+                    wrongIdiomFlash = null;
+                    renderCurrentSlide();
+                }, 650);
+            }
+        }
+
+        function resetIdiomMatching() {
+            selectedIdiomId = null;
+            matchedIdioms = {};
+            wrongIdiomFlash = null;
+            renderCurrentSlide();
+        }
+
+        // Slide 7: Dialogue Gap-Fill
+        function setActiveGap(index) {
+            if (dialogueChecked) return;
+            activeGapIndex = index;
+            renderCurrentSlide();
+        }
+
+        function fillActiveGap(word) {
+            if (dialogueChecked) return;
+            dialogueGaps[activeGapIndex].userValue = word;
+            const nextEmpty = dialogueGaps.findIndex(g => g.userValue === '');
+            if (nextEmpty !== -1) {
+                activeGapIndex = nextEmpty;
+            }
+            renderCurrentSlide();
+        }
+
+        function checkDialogue() {
+            dialogueChecked = true;
+            renderCurrentSlide();
+        }
+
+        function resetDialogue() {
+            dialogueGaps.forEach(g => g.userValue = '');
+            activeGapIndex = 0;
+            dialogueChecked = false;
+            renderCurrentSlide();
+        }
+
+        // Slide 8: Roleplay Scenario Switcher
+        function setRoleplayTab(tabNumber) {
+            activeRoleplayTab = tabNumber;
+            renderCurrentSlide();
+        }
+
+        /**
+         * Core Navigation & Rendering
+         */
+        function renderCurrentSlide() {
+            const slide = slides[currentSlide];
+            const contentEl = document.getElementById('slide-content');
+            const counterEl = document.getElementById('slide-counter');
+            const sectionEl = document.getElementById('slide-section-label');
+            const progressEl = document.getElementById('progress-bar');
+            const prevBtn = document.getElementById('btn-prev');
+            const nextBtn = document.getElementById('btn-next');
+
+            // Render HTML
+            contentEl.innerHTML = slide.render();
+            contentEl.scrollTop = 0;
+
+            // Update Footer & Progress
+            counterEl.textContent = `${currentSlide + 1} / ${slides.length}`;
+            sectionEl.textContent = slide.section;
+            const pct = ((currentSlide + 1) / slides.length) * 100;
+            progressEl.style.width = `${pct}%`;
+
+            // Update Button States
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                renderCurrentSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                renderCurrentSlide();
+            }
+        }
+
+        // Keyboard Arrow Key Support for Seamless Screen-Sharing
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // Initialize on Load
+        window.onload = function () {
+            renderCurrentSlide();
+        };
+    </script>
+</body>
+</html>
